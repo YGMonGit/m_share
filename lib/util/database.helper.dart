@@ -23,6 +23,13 @@ class DatabaseHelper {
       path,
       version: 1,
       onCreate: _onCreate,
+      onUpgrade: (db, oldVersion, newVersion) async {
+        // Handle database schema upgrades here if necessary
+        if (oldVersion < newVersion) {
+          // Add migration logic to update schema from oldVersion to newVersion
+          print('Database schema upgraded from $oldVersion to $newVersion');
+        }
+      },
     );
   }
 
@@ -31,19 +38,39 @@ class DatabaseHelper {
       CREATE TABLE courses (
         id INTEGER PRIMARY KEY,
         title TEXT,
-        icon TEXT
+        icon TEXT,
       )
     ''');
 
     await db.execute('''
-      INSERT INTO courses (title, icon)
+          CREATE TABLE assignments (
+            id INTEGER PRIMARY KEY,
+            title TEXT,
+            due_date DATE,
+            course_id INTEGER,
+            FOREIGN KEY (course_id) REFERENCES courses(id)
+          )
+        ''');
+
+    await db.execute('''
+      INSERT INTO courses (title, icon, dueDate)
       VALUES ('Flutter', 'flutter')
     ''');
 
     await db.execute('''
-      INSERT INTO courses (title, icon)
+      INSERT INTO courses (title, icon, dueDate)
       VALUES ('Dart', 'dart')
     ''');
+
+    await db.execute('''
+        INSERT INTO assignments (title, due_date, course_id)
+        VALUES ('Assignment 1', '2020-01-01', 1)
+      ''');
+
+    await db.execute('''
+        INSERT INTO assignments (title, due_date, course_id)
+        VALUES ('Assignment 2', '2077-01-01', 1)
+      ''');
   }
 
   Future<List<Map<String, dynamic>>> getCourses() async {
@@ -65,5 +92,39 @@ class DatabaseHelper {
   Future<int> deleteCourse(int id) async {
     Database db = await database;
     return await db.delete('courses', where: 'id = ?', whereArgs: [id]);
+  }
+
+  Future<List<Map<String, dynamic>>> getAssignmentsByCourseId(
+      int courseId) async {
+    Database db = await database;
+    return await db.query(
+      'assignments',
+      where: 'course_id = ?',
+      whereArgs: [courseId],
+    );
+  }
+
+  Future<List<Map<String, dynamic>>> getAssignments() async {
+    Database db = await database;
+    return await db.query(
+      'assignments',
+    );
+  }
+
+  Future<int> insertAssignment(Map<String, dynamic> row) async {
+    Database db = await database;
+    return await db.insert('assignments', row);
+  }
+
+  Future<int> updateAssignment(Map<String, dynamic> row) async {
+    Database db = await database;
+    int id = row['id'];
+    return await db
+        .update('assignments', row, where: 'id = ?', whereArgs: [id]);
+  }
+
+  Future<int> deleteAssignment(int id) async {
+    Database db = await database;
+    return await db.delete('assignments', where: 'id = ?', whereArgs: [id]);
   }
 }
