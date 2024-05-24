@@ -250,8 +250,7 @@ class Homes extends StatelessWidget {
                   ],
                 ),
               const SizedBox(height: 5.0),
-              if(!showDueIndicator)
-                const SizedBox(height: 65.0),
+              if (!showDueIndicator) const SizedBox(height: 65.0),
               Container(
                 decoration: BoxDecoration(
                   color: Colors.blue,
