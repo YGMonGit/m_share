@@ -6,6 +6,7 @@ class CourseController extends GetxController {
   final RxList<Map<String, dynamic>> assignmentList = RxList([]);
   var assignmentOverdueCount = 0.obs;
   var assignmentCloseDueCount = 0.obs;
+  final searchResults = <Map<String, dynamic>>[].obs;
   final dbHelper = DatabaseHelper();
 
   @override
@@ -82,5 +83,32 @@ class CourseController extends GetxController {
 
     assignmentOverdueCount.value = overdueCount;
     assignmentCloseDueCount.value = closeDueCount;
+  }
+
+  void search(String query) {
+    if (query.isEmpty) {
+      searchResults.clear();
+      return;
+    }
+
+    var filteredCourses = courseList
+        .where((course) =>
+            course['title'].toLowerCase().contains(query.toLowerCase()))
+        .map((course) => {
+              'title': course['title'],
+              'type': 'course',
+            })
+        .toList();
+
+    var filteredAssignments = assignmentList
+        .where((assignment) =>
+            assignment['title'].toLowerCase().contains(query.toLowerCase()))
+        .map((assignment) => {
+              'title': assignment['title'],
+              'type': 'assignment',
+            })
+        .toList();
+
+    searchResults.assignAll([...filteredCourses, ...filteredAssignments]);
   }
 }
