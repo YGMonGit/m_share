@@ -60,8 +60,25 @@ class _HomeState extends State<Home> {
               ),
             ],
           ),
+          actions: [
+            IconButton(onPressed: () {
+              Navigator.pushNamed(context, '/adminPanel');
+            }, icon: const Icon(Icons.admin_panel_settings)),
+            IconButton(onPressed: () {
+              Navigator.pushNamed(context, '/changePassword');
+            }, icon: const Icon(Icons.settings)),
+          ],
         ),
         body: _currentPage,
+        floatingActionButton: FloatingActionButton(
+          onPressed: () {
+            Navigator.pushNamed(context, '/addMaterial');
+          },
+          tooltip: 'Add New Material',
+          foregroundColor: Colors.black,
+          shape: const CircleBorder(),
+          child: const Icon(Icons.add),
+        ),
         bottomNavigationBar: BottomNavigationBar(
           currentIndex: _currentIndex,
           items: const [
