@@ -1,28 +1,37 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:m_share/Components/input.box.dart';
+import 'package:m_share/controller/user_controller.dart';
 
-class Setting extends StatefulWidget {
-  const Setting({super.key});
+class Setting extends StatelessWidget {
+  Setting({super.key});
 
-  @override
-  State<Setting> createState() => _Setting();
-}
-
-class _Setting extends State<Setting> {
   final _formKey = GlobalKey<FormState>();
   final TextEditingController _newPasswordController = TextEditingController();
+  final UserController userController = Get.find<UserController>();
 
-  void _passwordUpdate() {
+  void _passwordUpdate(BuildContext context) {
     if (_formKey.currentState!.validate()) {
-      // Navigate back
-      Navigator.pop(context);
+      // Assuming there's a method in the UserController to update the password
+      userController.updatePassword(_newPasswordController.text).then((_) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Password updated successfully')),
+        );
+        Navigator.pop(context);
+      }).catchError((error) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error updating password: $error')),
+        );
+      });
     }
   }
 
-  void _logout() {
+  void _logout(BuildContext context) {
+    userController.logout();
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Logout')),
+      const SnackBar(content: Text('Logged out successfully')),
     );
+    Navigator.pushReplacementNamed(context, '/login');
   }
 
   @override
@@ -62,7 +71,7 @@ class _Setting extends State<Setting> {
                 ),
                 const SizedBox(height: 16.0),
                 ElevatedButton(
-                  onPressed: _passwordUpdate,
+                  onPressed: () => _passwordUpdate(context),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.blue,
                     foregroundColor: Colors.white,
@@ -83,7 +92,7 @@ class _Setting extends State<Setting> {
                 const Divider(),
                 const SizedBox(height: 5.0),
                 ElevatedButton(
-                  onPressed: _logout,
+                  onPressed: () => _logout(context),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.redAccent,
                     foregroundColor: Colors.white,

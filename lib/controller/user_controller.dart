@@ -47,6 +47,12 @@ class UserController extends GetxController {
     await getUsers();
   }
 
+  Future<void> updatePassword(String newPassword) async {
+    if (user.value.isNotEmpty) {
+      await _dbHelper.updateUserPassword(user.value['id'], newPassword);
+    }
+  }
+
   @override
   void onInit() {
     super.onInit();

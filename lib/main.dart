@@ -27,8 +27,9 @@ class MyApp extends StatelessWidget {
         '/home': (context) => const Home(),
         '/addMaterial': (context) => const AddMaterialPage(),
         '/addUser': (context) => AddUserPage(),
-        '/changePassword': (context) => const Setting(),
+        '/changePassword': (context) => Setting(),
         '/adminPanel': (context) => const Admin(),
+        '/login': (context) => LoginPage(),
       },
     );
   }

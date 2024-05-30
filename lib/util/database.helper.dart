@@ -166,4 +166,10 @@ class DatabaseHelper {
     Database db = await database;
     return await db.query('users');
   }
+
+  Future<void> updateUserPassword(int id, String password) async {
+    Database db = await database;
+    await db.update('users', {'password': password},
+        where: 'id = ?', whereArgs: [id]);
+  }
 }
