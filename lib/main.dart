@@ -26,7 +26,7 @@ class MyApp extends StatelessWidget {
       routes: {
         '/home': (context) => const Home(),
         '/addMaterial': (context) => const AddMaterialPage(),
-        '/addUser': (context) => const AddUserPage(),
+        '/addUser': (context) => AddUserPage(),
         '/changePassword': (context) => const Setting(),
         '/adminPanel': (context) => const Admin(),
       },

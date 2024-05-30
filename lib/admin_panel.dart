@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:m_share/Components/section.header.dart';
 import 'package:m_share/Components/user.card.dart';
+import 'package:m_share/controller/user_controller.dart';
 
 class Admin extends StatefulWidget {
   const Admin({super.key});
@@ -12,6 +14,8 @@ class Admin extends StatefulWidget {
 class _AdminState extends State<Admin> {
   @override
   Widget build(BuildContext context) {
+    final userController = Get.find<UserController>();
+
     return Scaffold(
       appBar: AppBar(
         backgroundColor: const Color(0xFFFDFDFD),
@@ -25,43 +29,36 @@ class _AdminState extends State<Admin> {
           ),
         ),
       ),
-      body: const SingleChildScrollView(
+      body: SingleChildScrollView(
         child: Center(
           child: FractionallySizedBox(
-              widthFactor: 0.9,
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.start,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  Column(
-                    children: [
-                      SectionHeader(title: 'Users', subtitle: 'All users list'),
-                    ]
-                  ),
-                  UserCard(
-                    type: 'Teacher',
-                    name: 'Jason',
-                    //username for teacher is Their Name
-                    username: 'Jason',
-                    color: Colors.deepPurpleAccent,
-                  ),
-                  UserCard(
-                    type: 'Student',
-                    name: 'Yesehak',
-                    //username for student is their ID Number
-                    username: 'JA5080',
-                    color: Colors.deepPurpleAccent,
-                  ),
-                  UserCard(
-                    type: 'Admin',
-                    name: 'Eyasu',
-                    //only one admin and username is admin
-                    username: 'admin',
-                    color: Colors.redAccent,
-                  ),
-                ]
-              )
+            widthFactor: 0.9,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                const SectionHeader(title: 'Users', subtitle: 'All users list'),
+                Obx(() {
+                  if (userController.users.isEmpty) {
+                    return const Text('No users found');
+                  } else {
+                    return Column(
+                      children: userController.users.map((user) {
+                        return UserCard(
+                          id: user['id'],
+                          type: user['role'],
+                          username: user['username'],
+                          color: user['role'] == 'admin'
+                              ? Colors.redAccent
+                              : Colors.deepPurpleAccent,
+                        );
+                      }).toList(),
+                    );
+                  }
+                }),
+              ],
             ),
+          ),
         ),
       ),
       floatingActionButton: FloatingActionButton(

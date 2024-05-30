@@ -156,4 +156,14 @@ class DatabaseHelper {
     }
     return null;
   }
+
+  Future<int> deleteUser(int id) async {
+    Database db = await database;
+    return await db.delete('users', where: 'id = ?', whereArgs: [id]);
+  }
+
+  Future<List<Map<String, dynamic>>> getUsers() async {
+    Database db = await database;
+    return await db.query('users');
+  }
 }
