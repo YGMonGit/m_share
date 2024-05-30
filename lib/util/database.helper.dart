@@ -18,18 +18,11 @@ class DatabaseHelper {
   }
 
   Future<Database> _initDatabase() async {
-    String path = join(await getDatabasesPath(), 'app_database.db');
+    String path = join(await getDatabasesPath(), 'app_database_v2.db');
     return await openDatabase(
       path,
-      version: 1,
+      version: 2,
       onCreate: _onCreate,
-      onUpgrade: (db, oldVersion, newVersion) async {
-        // Handle database schema upgrades here if necessary
-        if (oldVersion < newVersion) {
-          // Add migration logic to update schema from oldVersion to newVersion
-          print('Database schema upgraded from $oldVersion to $newVersion');
-        }
-      },
     );
   }
 
@@ -38,39 +31,58 @@ class DatabaseHelper {
       CREATE TABLE courses (
         id INTEGER PRIMARY KEY,
         title TEXT,
-        icon TEXT,
-      )
+        icon TEXT
+      );
     ''');
 
     await db.execute('''
-          CREATE TABLE assignments (
-            id INTEGER PRIMARY KEY,
-            title TEXT,
-            due_date DATE,
-            course_id INTEGER,
-            FOREIGN KEY (course_id) REFERENCES courses(id)
-          )
-        ''');
-
-    await db.execute('''
-      INSERT INTO courses (title, icon, dueDate)
-      VALUES ('Flutter', 'flutter')
+      CREATE TABLE assignments (
+        id INTEGER PRIMARY KEY,
+        title TEXT,
+        due_date DATE,
+        course_id INTEGER,
+        FOREIGN KEY (course_id) REFERENCES courses(id)
+      );
     ''');
 
     await db.execute('''
-      INSERT INTO courses (title, icon, dueDate)
-      VALUES ('Dart', 'dart')
+      CREATE TABLE users (
+        id INTEGER PRIMARY KEY,
+        username TEXT UNIQUE,
+        password TEXT,
+        role TEXT
+      );
     ''');
 
     await db.execute('''
-        INSERT INTO assignments (title, due_date, course_id)
-        VALUES ('Assignment 1', '2020-01-01', 1)
-      ''');
+      INSERT INTO courses (title, icon)
+      VALUES ('Flutter', 'flutter');
+    ''');
 
     await db.execute('''
-        INSERT INTO assignments (title, due_date, course_id)
-        VALUES ('Assignment 2', '2077-01-01', 1)
-      ''');
+      INSERT INTO courses (title, icon)
+      VALUES ('Dart', 'dart');
+    ''');
+
+    await db.execute('''
+      INSERT INTO assignments (title, due_date, course_id)
+      VALUES ('Assignment 1', '2020-01-01', 1);
+    ''');
+
+    await db.execute('''
+      INSERT INTO assignments (title, due_date, course_id)
+      VALUES ('Assignment 2', '2077-01-01', 1);
+    ''');
+
+    await db.execute('''
+      INSERT INTO users (username, password, role)
+      VALUES ('admin', '12345678', 'admin');
+    ''');
+
+    await db.execute('''
+      INSERT INTO users (username, password, role)
+      VALUES ('user', '12345678', 'user');
+    ''');
   }
 
   Future<List<Map<String, dynamic>>> getCourses() async {
@@ -106,9 +118,7 @@ class DatabaseHelper {
 
   Future<List<Map<String, dynamic>>> getAssignments() async {
     Database db = await database;
-    return await db.query(
-      'assignments',
-    );
+    return await db.query('assignments');
   }
 
   Future<int> insertAssignment(Map<String, dynamic> row) async {
@@ -126,5 +136,24 @@ class DatabaseHelper {
   Future<int> deleteAssignment(int id) async {
     Database db = await database;
     return await db.delete('assignments', where: 'id = ?', whereArgs: [id]);
+  }
+
+  Future<int> insertUser(Map<String, dynamic> row) async {
+    Database db = await database;
+    return await db.insert('users', row);
+  }
+
+  Future<Map<String, dynamic>?> getUser(
+      String username, String password) async {
+    Database db = await database;
+    List<Map<String, dynamic>> results = await db.query(
+      'users',
+      where: 'username = ? AND password = ?',
+      whereArgs: [username, password],
+    );
+    if (results.isNotEmpty) {
+      return results.first;
+    }
+    return null;
   }
 }

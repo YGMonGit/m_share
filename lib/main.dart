@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:m_share/login_page.dart';
 import 'package:m_share/home.dart';
 import 'Package:m_share/add_material.dart';
@@ -18,10 +19,10 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    return GetMaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'M-Share',
-      home: const LoginPage(),
+      home: LoginPage(),
       routes: {
         '/home': (context) => const Home(),
         '/addMaterial': (context) => const AddMaterialPage(),
