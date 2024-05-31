@@ -5,6 +5,7 @@ class CourseController extends GetxController {
   var courseList = <Map<String, dynamic>>[].obs;
   final RxList<Map<String, dynamic>> assignmentList = RxList([]);
   var assignmentOverdueCount = 0.obs;
+  var overDueAssignment = <Map<String, dynamic>>[].obs;
   var assignmentCloseDueCount = 0.obs;
   final searchResults = <Map<String, dynamic>>[].obs;
   final dbHelper = DatabaseHelper();
@@ -62,6 +63,13 @@ class CourseController extends GetxController {
     final assignments = await dbHelper.getAssignments();
     assignmentList.assignAll(assignments);
     calculateAssignmentCounts();
+  }
+
+  Future<void> getOverdueAssignments() async {
+    final assignments = await dbHelper.getOverDueAssignments();
+    print("************");
+    print(assignments);
+    overDueAssignment.assignAll(assignments);
   }
 
   void calculateAssignmentCounts() {

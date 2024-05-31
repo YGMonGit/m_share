@@ -29,11 +29,16 @@ class Homes extends StatelessWidget {
                           crossAxisAlignment: CrossAxisAlignment.center,
                           children: [
                             OverviewCard(
-                                count: courseController
-                                    .assignmentOverdueCount.value,
-                                title: 'Assignments Overdue',
-                                color: Colors.red,
-                                iconData: Icons.arrow_forward),
+                              count:
+                                  courseController.assignmentOverdueCount.value,
+                              title: 'Assignments Overdue',
+                              color: Colors.red,
+                              iconData: Icons.arrow_forward,
+                              onTap: () => {
+                                Navigator.pushNamed(
+                                    context, '/course/Assignments Overdue')
+                              },
+                            ),
 
                             OverviewCard(
                                 count: courseController
@@ -55,13 +60,15 @@ class Homes extends StatelessWidget {
                               subtitle: 'Your courses this term'),
                           ...courseController.courseList.map((course) {
                             final title = course['title'] as String;
+                            final id = (course['id'] as int).toString();
                             // final icon = course['icon'] as String;
 
                             return CourseCard(
                               title: title,
                               icon: Icons.abc,
                               onTap: () {
-                                Navigator.pushNamed(context, '/course/$title');
+                                Navigator.pushNamed(
+                                    context, '/course/$title-$id');
                               },
                             );
                           })

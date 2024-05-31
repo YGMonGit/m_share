@@ -18,10 +18,10 @@ class DatabaseHelper {
   }
 
   Future<Database> _initDatabase() async {
-    String path = join(await getDatabasesPath(), 'app_database_v2.db');
+    String path = join(await getDatabasesPath(), 'app_database_v3.db');
     return await openDatabase(
       path,
-      version: 2,
+      version: 3,
       onCreate: _onCreate,
     );
   }
@@ -39,7 +39,7 @@ class DatabaseHelper {
       CREATE TABLE assignments (
         id INTEGER PRIMARY KEY,
         title TEXT,
-        due_date DATE,
+        due_date DATE Null,
         course_id INTEGER,
         FOREIGN KEY (course_id) REFERENCES courses(id)
       );
@@ -67,6 +67,11 @@ class DatabaseHelper {
     await db.execute('''
       INSERT INTO assignments (title, due_date, course_id)
       VALUES ('Assignment 1', '2020-01-01', 1);
+    ''');
+
+    await db.execute('''
+      INSERT INTO assignments (title, due_date, course_id)
+      VALUES ('Note 1', Null, 1);
     ''');
 
     await db.execute('''
@@ -111,14 +116,26 @@ class DatabaseHelper {
     Database db = await database;
     return await db.query(
       'assignments',
-      where: 'course_id = ?',
+      where: 'course_id = ?'
+          'AND due_date IS NOT Null',
       whereArgs: [courseId],
     );
   }
 
   Future<List<Map<String, dynamic>>> getAssignments() async {
     Database db = await database;
-    return await db.query('assignments');
+    return await db.query('assignments',
+        where: 'due_date IS NOT Null', orderBy: 'due_date');
+  }
+
+  Future<List<Map<String, dynamic>>> getOverDueAssignments() async {
+    Database db = await database;
+    return await db.query(
+      'assignments',
+      where: 'due_date < ?',
+      whereArgs: [DateTime.now().toIso8601String()],
+      orderBy: 'due_date',
+    );
   }
 
   Future<int> insertAssignment(Map<String, dynamic> row) async {
@@ -171,5 +188,36 @@ class DatabaseHelper {
     Database db = await database;
     await db.update('users', {'password': password},
         where: 'id = ?', whereArgs: [id]);
+  }
+
+  Future<List<Map<String, dynamic>>> getNotes() async {
+    Database db = await database;
+    return await db.query('assignments', where: 'due_date IS NULL');
+  }
+
+  Future<List<Map<String, dynamic>>> getNotesByCourseId(int courseId) async {
+    Database db = await database;
+    return await db.query(
+      'assignments',
+      where: 'course_id = ? AND due_date IS NULL',
+      whereArgs: [courseId],
+    );
+  }
+
+  Future<int> insertNote(Map<String, dynamic> row) async {
+    Database db = await database;
+    return await db.insert('assignments', row);
+  }
+
+  Future<int> updateNote(Map<String, dynamic> row) async {
+    Database db = await database;
+    int id = row['id'];
+    return await db
+        .update('assignments', row, where: 'id = ?', whereArgs: [id]);
+  }
+
+  Future<int> deleteNote(int id) async {
+    Database db = await database;
+    return await db.delete('assignments', where: 'id = ?', whereArgs: [id]);
   }
 }

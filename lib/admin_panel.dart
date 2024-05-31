@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:m_share/Components/section.header.dart';
 import 'package:m_share/Components/user.card.dart';
+import 'package:m_share/controller/course.controller.dart';
 import 'package:m_share/controller/user_controller.dart';
 
 class Admin extends StatefulWidget {
@@ -15,6 +16,7 @@ class _AdminState extends State<Admin> {
   @override
   Widget build(BuildContext context) {
     final userController = Get.find<UserController>();
+    Get.put(CourseController());
 
     return Scaffold(
       appBar: AppBar(
@@ -28,6 +30,13 @@ class _AdminState extends State<Admin> {
             color: Color(0xFF36454F),
           ),
         ),
+        actions: [
+          IconButton(
+              onPressed: () {
+                Navigator.pushNamed(context, '/addMaterial');
+              },
+              icon: const Icon(Icons.add)),
+        ],
       ),
       body: SingleChildScrollView(
         child: Center(

@@ -37,7 +37,7 @@ class MyApp extends StatelessWidget {
           // case '/home':
           //   return MaterialPageRoute(builder: (context) => const Home());
           case '/addMaterial':
-            return MaterialPageRoute(builder: (context) => const AddMaterialPage());
+            return MaterialPageRoute(builder: (context) => AddMaterialPage());
           case '/addUser':
             return MaterialPageRoute(builder: (context) => AddUserPage());
           case '/changePassword':

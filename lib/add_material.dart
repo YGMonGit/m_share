@@ -1,21 +1,22 @@
 import 'package:flutter/material.dart';
-import 'package:file_picker/file_picker.dart';
+import 'package:get/get.dart';
 import 'package:m_share/Components/input.box.dart';
+import 'package:m_share/controller/course.controller.dart';
+import 'package:m_share/controller/user_controller.dart';
+import 'package:m_share/controller/note.controller.dart';
 
-class AddMaterialPage extends StatefulWidget {
-  const AddMaterialPage({super.key});
+class AddMaterialPage extends StatelessWidget {
+  AddMaterialPage({super.key});
 
-  @override
-  State<AddMaterialPage> createState() => _AddMaterialPageState();
-}
-
-class _AddMaterialPageState extends State<AddMaterialPage> {
   final _formKey = GlobalKey<FormState>();
   final TextEditingController _titleController = TextEditingController();
-  DateTime? _selectedDate;
-  String _selectedType = 'Note';
-  String _selectedCourse = 'Dart';
-  String? _selectedFileName;
+  final Rx<DateTime?> _selectedDate = DateTime.now().obs;
+  final RxString _selectedType = 'Note'.obs;
+  final RxString _selectedCourse = '1'.obs;
+
+  final userController = Get.find<UserController>();
+  final noteController = Get.put(NoteController());
+  final courseController = Get.find<CourseController>();
 
   Future<void> _selectDueDate(BuildContext context) async {
     final DateTime? picked = await showDatePicker(
@@ -24,40 +25,39 @@ class _AddMaterialPageState extends State<AddMaterialPage> {
       firstDate: DateTime(2000),
       lastDate: DateTime(2101),
     );
-    if (picked != null && picked != _selectedDate) {
-      setState(() {
-        _selectedDate = picked;
-      });
-    }
-  }
-
-  Future<void> _selectFile() async {
-    FilePickerResult? result = await FilePicker.platform.pickFiles(
-      type: FileType.custom,
-      allowedExtensions: ['pdf', 'doc', 'docx'],
-    );
-
-    if (result != null) {
-      setState(() {
-        _selectedFileName = result.files.single.name;
-      });
+    if (picked != null && picked != _selectedDate.value) {
+      print(picked);
+      _selectedDate.value = picked;
     }
   }
 
   void _submit() {
-    if (_formKey.currentState!.validate() && _selectedDate != null && _selectedFileName != null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Done')),
-      );
+    print(_selectedDate.value);
+    if (_formKey.currentState!.validate()) {
+      if (_selectedDate.value == null) {
+        noteController.addNote({
+          'title': _titleController.text,
+          'due_date': _selectedDate.value,
+          'course_id': _selectedCourse.value,
+        });
+      } else {
+        courseController.addAssignment({
+          'title': _titleController.text,
+          'due_date': _selectedDate.value!.toIso8601String(),
+          'course_id': _selectedCourse.value,
+        });
+      }
+      Get.snackbar('Success', 'Material added successfully');
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please fill all fields, select a due date, and upload a file')),
-      );
+      Get.snackbar('Error',
+          'Please fill all fields, select a due date, and upload a file');
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    courseController.loadCourses();
+
     return Scaffold(
       appBar: AppBar(
         backgroundColor: const Color(0xFFFDFDFD),
@@ -79,56 +79,59 @@ class _AddMaterialPageState extends State<AddMaterialPage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                DropdownButtonFormField<String>(
-                  value: _selectedType,
-                  decoration: InputDecoration(
-                    fillColor: Colors.grey[200],
-                    filled: true,
-                    contentPadding: const EdgeInsets.symmetric(vertical: 16.0, horizontal: 16.0),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(16.0),
-                      borderSide: BorderSide.none,
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(16.0),
-                      borderSide: BorderSide(
-                        color: Colors.grey[600]!,
-                        width: 1.5,
+                Obx(() => DropdownButtonFormField<String>(
+                      value: _selectedType.value,
+                      decoration: InputDecoration(
+                        fillColor: Colors.grey[200],
+                        filled: true,
+                        contentPadding: const EdgeInsets.symmetric(
+                            vertical: 16.0, horizontal: 16.0),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(16.0),
+                          borderSide: BorderSide.none,
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(16.0),
+                          borderSide: BorderSide(
+                            color: Colors.grey[600]!,
+                            width: 1.5,
+                          ),
+                        ),
+                        labelStyle: TextStyle(
+                          color: Colors.grey[600],
+                        ),
+                        floatingLabelStyle: TextStyle(
+                          color: Colors.grey[600],
+                        ),
                       ),
-                    ),
-                    labelStyle: TextStyle(
-                      color: Colors.grey[600],
-                    ),
-                    floatingLabelStyle: TextStyle(
-                      color: Colors.grey[600],
-                    ),
-                  ),
-                  dropdownColor: Colors.grey[200],
-                  items: ['Note', 'Assignment'].map((String value) {
-                    return DropdownMenuItem<String>(
-                      value: value,
-                      child: Text(value),
-                    );
-                  }).toList(),
-                  onChanged: (String? newValue) {
-                    setState(() {
-                      _selectedType = newValue!;
-                    });
-                  },
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Please select a type';
-                    }
-                    return null;
-                  },
-                ),
+                      dropdownColor: Colors.grey[200],
+                      items: [
+                        'Note',
+                        if (userController.isAdmin.value) 'Assignment'
+                      ].map((String value) {
+                        return DropdownMenuItem<String>(
+                          value: value,
+                          child: Text(value),
+                        );
+                      }).toList(),
+                      onChanged: (String? newValue) {
+                        _selectedType.value = newValue!;
+                      },
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Please select a type';
+                        }
+                        return null;
+                      },
+                    )),
                 const SizedBox(height: 25.0),
                 DropdownButtonFormField<String>(
-                  value: _selectedCourse,
+                  value: _selectedCourse.value,
                   decoration: InputDecoration(
                     fillColor: Colors.grey[200],
                     filled: true,
-                    contentPadding: const EdgeInsets.symmetric(vertical: 16.0, horizontal: 16.0),
+                    contentPadding: const EdgeInsets.symmetric(
+                        vertical: 16.0, horizontal: 16.0),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(16.0),
                       borderSide: BorderSide.none,
@@ -148,20 +151,19 @@ class _AddMaterialPageState extends State<AddMaterialPage> {
                     ),
                   ),
                   dropdownColor: Colors.grey[200],
-                  items: ['Dart', 'Flutter'].map((String value) {
+                  // ignore: invalid_use_of_protected_member
+                  items: courseController.courseList.value.map((dynamic value) {
                     return DropdownMenuItem<String>(
-                      value: value,
-                      child: Text(value),
+                      value: value['id'].toString(),
+                      child: Text(value['title']),
                     );
                   }).toList(),
                   onChanged: (String? newValue) {
-                    setState(() {
-                      _selectedCourse = newValue!;
-                    });
+                    _selectedCourse.value = newValue!;
                   },
                   validator: (value) {
                     if (value == null || value.isEmpty) {
-                      return 'Please select a type';
+                      return 'Please select a course';
                     }
                     return null;
                   },
@@ -178,48 +180,36 @@ class _AddMaterialPageState extends State<AddMaterialPage> {
                   },
                 ),
                 const SizedBox(height: 25.0),
-                ElevatedButton(
-                  onPressed: _selectFile,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.grey[300],
-                    foregroundColor: Colors.black,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16.0),
-                    ),
-                    minimumSize: const Size(0, 50),
-                  ),
-                  child: const Text('Select File'),
-                ),
-                if (_selectedFileName != null)
-                  Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 8.0),
-                    child: Text('Selected File: $_selectedFileName'),
-                  ),
                 const SizedBox(height: 25.0),
-                Row(
-                  children: [
-                    Expanded(
-                      child: Text(
-                        _selectedDate == null
-                            ? 'No due date chosen!'
-                            : 'Due Date: ${_selectedDate!.toLocal().toString().split(' ')[0]}',
-                      ),
-                    ),
-                    ElevatedButton(
-                      onPressed: () => _selectDueDate(context),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.grey[300],
-                        foregroundColor: Colors.black,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(16.0),
+                Obx(() {
+                  if (_selectedType.value != 'Note') {
+                    return Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            _selectedDate.value == null
+                                ? 'No due date chosen!'
+                                : 'Due Date: ${_selectedDate.value!.toLocal().toString().split(' ')[0]}',
+                          ),
                         ),
-                        minimumSize: const Size(0, 50),
-                      ),
-                      child: const Text('Select Due Date'),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 25.0),
+                        ElevatedButton(
+                          onPressed: () => _selectDueDate(context),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.grey[300],
+                            foregroundColor: Colors.black,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(16.0),
+                            ),
+                            minimumSize: const Size(0, 50),
+                          ),
+                          child: const Text('Select Due Date'),
+                        ),
+                      ],
+                    );
+                  } else {
+                    return const SizedBox.shrink();
+                  }
+                }),
                 ElevatedButton(
                   onPressed: _submit,
                   style: ElevatedButton.styleFrom(
