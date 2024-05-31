@@ -4,7 +4,8 @@ import 'search.dart';
 import 'package:flutter/material.dart';
 
 class Home extends StatefulWidget {
-  const Home({super.key});
+  final String username;
+  const Home({super.key, required this.username});
 
   @override
   State<Home> createState() => _HomeState();
@@ -39,10 +40,10 @@ class _HomeState extends State<Home> {
       appBar: AppBar(
         backgroundColor: const Color(0xFFFDFDFD),
         toolbarHeight: 100,
-        title: const Column(
+        title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
+            const Text(
               'Welcome back,',
               style: TextStyle(
                 fontSize: 35.0,
@@ -51,8 +52,8 @@ class _HomeState extends State<Home> {
               ),
             ),
             Text(
-              'Kaleab',
-              style: TextStyle(
+              widget.username, // Use widget.username here
+              style: const TextStyle(
                 fontSize: 20.0,
                 fontWeight: FontWeight.normal,
                 color: Color(0xFF8C959B),

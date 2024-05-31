@@ -60,6 +60,9 @@ class Homes extends StatelessWidget {
                             return CourseCard(
                               title: title,
                               icon: Icons.abc,
+                              onTap: () {
+                                Navigator.pushNamed(context, '/course/$title');
+                              },
                             );
                           })
                         ])),

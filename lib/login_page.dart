@@ -21,7 +21,7 @@ class LoginPage extends StatelessWidget {
         if (_userController.isAdmin.value) {
           Get.offAll(() => const Admin());
         } else {
-          Get.offAll(() => const Home());
+          Get.offAll(() => Home(username: _usernameController.text,));
         }
       } else {
         Get.snackbar(

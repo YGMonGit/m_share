@@ -14,6 +14,7 @@ class _AddMaterialPageState extends State<AddMaterialPage> {
   final TextEditingController _titleController = TextEditingController();
   DateTime? _selectedDate;
   String _selectedType = 'Note';
+  String _selectedCourse = 'Dart';
   String? _selectedFileName;
 
   Future<void> _selectDueDate(BuildContext context) async {
@@ -112,6 +113,50 @@ class _AddMaterialPageState extends State<AddMaterialPage> {
                   onChanged: (String? newValue) {
                     setState(() {
                       _selectedType = newValue!;
+                    });
+                  },
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Please select a type';
+                    }
+                    return null;
+                  },
+                ),
+                const SizedBox(height: 25.0),
+                DropdownButtonFormField<String>(
+                  value: _selectedCourse,
+                  decoration: InputDecoration(
+                    fillColor: Colors.grey[200],
+                    filled: true,
+                    contentPadding: const EdgeInsets.symmetric(vertical: 16.0, horizontal: 16.0),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(16.0),
+                      borderSide: BorderSide.none,
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(16.0),
+                      borderSide: BorderSide(
+                        color: Colors.grey[600]!,
+                        width: 1.5,
+                      ),
+                    ),
+                    labelStyle: TextStyle(
+                      color: Colors.grey[600],
+                    ),
+                    floatingLabelStyle: TextStyle(
+                      color: Colors.grey[600],
+                    ),
+                  ),
+                  dropdownColor: Colors.grey[200],
+                  items: ['Dart', 'Flutter'].map((String value) {
+                    return DropdownMenuItem<String>(
+                      value: value,
+                      child: Text(value),
+                    );
+                  }).toList(),
+                  onChanged: (String? newValue) {
+                    setState(() {
+                      _selectedCourse = newValue!;
                     });
                   },
                   validator: (value) {
