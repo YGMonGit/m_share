@@ -67,9 +67,8 @@ class CourseController extends GetxController {
 
   Future<void> getOverdueAssignments() async {
     final assignments = await dbHelper.getOverDueAssignments();
-    print("************");
-    print(assignments);
     overDueAssignment.assignAll(assignments);
+    // assignmentOverdueCount.value = assignments.length;
   }
 
   void calculateAssignmentCounts() {
@@ -78,14 +77,16 @@ class CourseController extends GetxController {
     int closeDueCount = 0;
 
     for (var assignment in assignmentList) {
-      final dueDate = DateTime.parse(assignment['due_date']);
-      final isOverdue = dueDate.isBefore(now);
-      final closeDue = dueDate.difference(now).inDays <= 7;
+      if (assignment['due_date'] != null) {
+        final dueDate = DateTime.parse(assignment['due_date']);
+        final isOverdue = dueDate.isBefore(now);
+        final closeDue = dueDate.difference(now).inDays <= 7;
 
-      if (isOverdue) {
-        overdueCount++;
-      } else if (closeDue) {
-        closeDueCount++;
+        if (isOverdue) {
+          overdueCount++;
+        } else if (closeDue) {
+          closeDueCount++;
+        }
       }
     }
 

@@ -18,10 +18,10 @@ class DatabaseHelper {
   }
 
   Future<Database> _initDatabase() async {
-    String path = join(await getDatabasesPath(), 'app_database_v3.db');
+    String path = join(await getDatabasesPath(), 'app_database_v4.db');
     return await openDatabase(
       path,
-      version: 3,
+      version: 4,
       onCreate: _onCreate,
     );
   }
@@ -158,8 +158,7 @@ class DatabaseHelper {
 
   Future<List<Map<String, dynamic>>> getAssignments() async {
     Database db = await database;
-    return await db.query('assignments',
-        where: 'due_date IS NOT Null', orderBy: 'due_date');
+    return await db.query('assignments', orderBy: 'due_date');
   }
 
   Future<List<Map<String, dynamic>>> getOverDueAssignments() async {

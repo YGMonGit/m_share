@@ -13,6 +13,7 @@ class Homes extends StatelessWidget {
   Widget build(BuildContext context) {
     final courseController = Get.put<CourseController>(CourseController());
     courseController.getAssignments();
+    courseController.getOverdueAssignments();
 
     return Scaffold(
       backgroundColor: const Color(0xFFFDFDFD),
