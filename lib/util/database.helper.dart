@@ -41,6 +41,7 @@ class DatabaseHelper {
         title TEXT,
         due_date DATE Null,
         course_id INTEGER,
+        file_path TEXT,
         FOREIGN KEY (course_id) REFERENCES courses(id)
       );
     ''');
@@ -50,18 +51,30 @@ class DatabaseHelper {
         id INTEGER PRIMARY KEY,
         username TEXT UNIQUE,
         password TEXT,
-        role TEXT
+        role TEXT,
+        course_id INTEGER,
+        FOREIGN KEY (course_id) REFERENCES courses(id)
       );
     ''');
 
     await db.execute('''
       INSERT INTO courses (title, icon)
-      VALUES ('Flutter', 'flutter');
+      VALUES ('Mobile App', 'flutter');
     ''');
 
     await db.execute('''
       INSERT INTO courses (title, icon)
-      VALUES ('Dart', 'dart');
+      VALUES ('Project Management', 'management');
+    ''');
+
+    await db.execute('''
+      INSERT INTO courses (title, icon)
+      VALUES ('Computer Graphics', 'graphics');
+    ''');
+
+    await db.execute('''
+      INSERT INTO courses (title, icon)
+      VALUES ('Software Testing', 'testing');
     ''');
 
     await db.execute('''
@@ -85,8 +98,29 @@ class DatabaseHelper {
     ''');
 
     await db.execute('''
+      INSERT INTO users (username, password, role, course_id)
+      VALUES ('Ashenafi', '12345678', 'Teacher', 1);
+    ''');
+
+    await db.execute('''
       INSERT INTO users (username, password, role)
-      VALUES ('user', '12345678', 'user');
+      VALUES ('Timaj', '12345678', 'Student');
+    ''');
+    await db.execute('''
+      INSERT INTO users (username, password, role)
+      VALUES ('Kaleab', '12345678', 'Student');
+    ''');
+    await db.execute('''
+      INSERT INTO users (username, password, role)
+      VALUES ('Yesehak', '12345678', 'Student');
+    ''');
+    await db.execute('''
+      INSERT INTO users (username, password, role)
+      VALUES ('Edelawit', '12345678', 'Student');
+    ''');
+    await db.execute('''
+      INSERT INTO users (username, password, role)
+      VALUES ('Lidiya', '12345678', 'Student');
     ''');
   }
 

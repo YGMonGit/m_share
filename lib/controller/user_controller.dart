@@ -33,11 +33,12 @@ class UserController extends GetxController {
     users.value = await _dbHelper.getUsers();
   }
 
-  Future<void> addUser(String username, String password, String role) async {
+  Future<void> addUser(String username, String password, String role , int courseId) async {
     await _dbHelper.insertUser({
       'username': username,
       'password': password,
       'role': role,
+      'course_id': courseId,
     });
     getUsers();
   }

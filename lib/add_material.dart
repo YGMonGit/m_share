@@ -1,3 +1,4 @@
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:m_share/Components/input.box.dart';
@@ -5,14 +6,20 @@ import 'package:m_share/controller/course.controller.dart';
 import 'package:m_share/controller/user_controller.dart';
 import 'package:m_share/controller/note.controller.dart';
 
-class AddMaterialPage extends StatelessWidget {
-  AddMaterialPage({super.key});
+class AddMaterialPage extends StatefulWidget {
+  const AddMaterialPage({super.key});
 
+  @override
+  State<AddMaterialPage> createState() => _AddMaterialPageState();
+}
+
+class _AddMaterialPageState extends State<AddMaterialPage> {
   final _formKey = GlobalKey<FormState>();
   final TextEditingController _titleController = TextEditingController();
   final Rx<DateTime?> _selectedDate = DateTime.now().obs;
   final RxString _selectedType = 'Note'.obs;
-  final RxString _selectedCourse = '1'.obs;
+  String? _selectedFileName;
+  String? _selectedFilePath;
 
   final userController = Get.find<UserController>();
   final noteController = Get.put(NoteController());
@@ -31,22 +38,43 @@ class AddMaterialPage extends StatelessWidget {
     }
   }
 
+  // void check() {
+  //   ScaffoldMessenger.of(context).showSnackBar(
+  //     SnackBar(
+  //       content: Text("${userController.user.value['id']}"),
+  //     ),
+  //   );
+  // }
+
+  Future<void> _selectFile() async {
+    FilePickerResult? result = await FilePicker.platform.pickFiles(
+      type: FileType.custom,
+      allowedExtensions: ['pdf', 'doc', 'docx'],
+    );
+
+    if (result != null) {
+      setState(() {
+        _selectedFileName = result.files.single.name;
+        _selectedFilePath = result.files.single.path;
+      });
+    }
+  }
+
   void _submit() {
-    print(_selectedDate.value);
     if (_formKey.currentState!.validate()) {
-      if (_selectedDate.value == null) {
-        noteController.addNote({
-          'title': _titleController.text,
-          'due_date': _selectedDate.value,
-          'course_id': _selectedCourse.value,
-        });
+      Map<String, dynamic> materialData = {
+        'title': _titleController.text,
+        'course_id': userController.user.value['course_id'],
+        'file_path': _selectedFilePath,
+      };
+
+      if (_selectedType.value == 'Assignment') {
+        materialData['due_date'] = _selectedDate.value?.toIso8601String();
+        courseController.addAssignment(materialData);
       } else {
-        courseController.addAssignment({
-          'title': _titleController.text,
-          'due_date': _selectedDate.value!.toIso8601String(),
-          'course_id': _selectedCourse.value,
-        });
+        noteController.addNote(materialData);
       }
+
       Get.snackbar('Success', 'Material added successfully');
     } else {
       Get.snackbar('Error',
@@ -70,6 +98,13 @@ class AddMaterialPage extends StatelessWidget {
             color: Color(0xFF36454F),
           ),
         ),
+        // actions: [
+        //   IconButton(
+        //       onPressed: () {
+        //         check();
+        //       },
+        //       icon: const Icon(Icons.settings)),
+        // ],
       ),
       body: SingleChildScrollView(
         child: Padding(
@@ -107,7 +142,8 @@ class AddMaterialPage extends StatelessWidget {
                       dropdownColor: Colors.grey[200],
                       items: [
                         'Note',
-                        if (userController.isAdmin.value) 'Assignment'
+                        // if (userController.isAdmin.value)
+                        'Assignment'
                       ].map((String value) {
                         return DropdownMenuItem<String>(
                           value: value,
@@ -125,50 +161,6 @@ class AddMaterialPage extends StatelessWidget {
                       },
                     )),
                 const SizedBox(height: 25.0),
-                DropdownButtonFormField<String>(
-                  value: _selectedCourse.value,
-                  decoration: InputDecoration(
-                    fillColor: Colors.grey[200],
-                    filled: true,
-                    contentPadding: const EdgeInsets.symmetric(
-                        vertical: 16.0, horizontal: 16.0),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(16.0),
-                      borderSide: BorderSide.none,
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(16.0),
-                      borderSide: BorderSide(
-                        color: Colors.grey[600]!,
-                        width: 1.5,
-                      ),
-                    ),
-                    labelStyle: TextStyle(
-                      color: Colors.grey[600],
-                    ),
-                    floatingLabelStyle: TextStyle(
-                      color: Colors.grey[600],
-                    ),
-                  ),
-                  dropdownColor: Colors.grey[200],
-                  // ignore: invalid_use_of_protected_member
-                  items: courseController.courseList.value.map((dynamic value) {
-                    return DropdownMenuItem<String>(
-                      value: value['id'].toString(),
-                      child: Text(value['title']),
-                    );
-                  }).toList(),
-                  onChanged: (String? newValue) {
-                    _selectedCourse.value = newValue!;
-                  },
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Please select a course';
-                    }
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 25.0),
                 InputBox(
                   controller: _titleController,
                   labelText: 'Title',
@@ -180,6 +172,23 @@ class AddMaterialPage extends StatelessWidget {
                   },
                 ),
                 const SizedBox(height: 25.0),
+                ElevatedButton(
+                  onPressed: _selectFile,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.grey[300],
+                    foregroundColor: Colors.black,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16.0),
+                    ),
+                    minimumSize: const Size(0, 50),
+                  ),
+                  child: const Text('Select File'),
+                ),
+                if (_selectedFileName != null)
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 8.0),
+                    child: Text('Selected File: $_selectedFileName'),
+                  ),
                 const SizedBox(height: 25.0),
                 Obx(() {
                   if (_selectedType.value != 'Note') {
@@ -206,6 +215,13 @@ class AddMaterialPage extends StatelessWidget {
                         ),
                       ],
                     );
+                  } else {
+                    return const SizedBox.shrink();
+                  }
+                }),
+                Obx(() {
+                  if (_selectedType.value != 'Note') {
+                    return const SizedBox(height: 25.0);
                   } else {
                     return const SizedBox.shrink();
                   }

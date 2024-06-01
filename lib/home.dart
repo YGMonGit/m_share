@@ -2,6 +2,8 @@ import 'homes.dart';
 import 'notifications.dart';
 import 'search.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:m_share/controller/user_controller.dart';
 
 class Home extends StatefulWidget {
   final String username;
@@ -15,6 +17,7 @@ class _HomeState extends State<Home> {
   int _currentIndex = 0;
   final List<Widget> _listPage = [];
   late Widget _currentPage;
+  final UserController _userController = Get.find<UserController>();
 
   @override
   void initState() {
@@ -62,26 +65,26 @@ class _HomeState extends State<Home> {
           ],
         ),
         actions: [
-          // IconButton(onPressed: () {
-          //   Navigator.pushNamed(context, '/adminPanel');
-          // }, icon: const Icon(Icons.admin_panel_settings)),
           IconButton(
-              onPressed: () {
-                Navigator.pushNamed(context, '/changePassword');
-              },
-              icon: const Icon(Icons.settings)),
+            onPressed: () {
+              Navigator.pushNamed(context, '/changePassword');
+            },
+            icon: const Icon(Icons.settings),
+          ),
         ],
       ),
       body: _currentPage,
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          Navigator.pushNamed(context, '/addMaterial');
-        },
-        tooltip: 'Add New Material',
-        foregroundColor: Colors.black,
-        shape: const CircleBorder(),
-        child: const Icon(Icons.add),
-      ),
+      floatingActionButton: _userController.user.value['role'] == 'Teacher'
+          ? FloatingActionButton(
+              onPressed: () {
+                Navigator.pushNamed(context, '/addMaterial');
+              },
+              tooltip: 'Add New Material',
+              foregroundColor: Colors.black,
+              shape: const CircleBorder(),
+              child: const Icon(Icons.add),
+            )
+          : null,
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _currentIndex,
         items: const [

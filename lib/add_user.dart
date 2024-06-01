@@ -2,13 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:m_share/Components/input.box.dart';
 import 'package:m_share/controller/user_controller.dart';
+import 'package:m_share/controller/course.controller.dart';
 
 class AddUserPage extends StatelessWidget {
   final _formKey = GlobalKey<FormState>();
   final TextEditingController _usernameController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
-  // final TextEditingController _courseIdController = TextEditingController();
   final RxString _selectedType = 'Student'.obs;
+  final RxInt _selectedCourseId = 1.obs;
+  final courseController = Get.put(CourseController());
 
   AddUserPage({super.key});
 
@@ -19,12 +21,11 @@ class AddUserPage extends StatelessWidget {
         _usernameController.text,
         _passwordController.text,
         _selectedType.value,
+        _selectedCourseId.value,
       );
-      // ignore: use_build_context_synchronously
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('User added successfully')),
       );
-      // ignore: use_build_context_synchronously
       Navigator.pop(context);
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -123,11 +124,49 @@ class AddUserPage extends StatelessWidget {
                     return null;
                   },
                 ),
-                // const SizedBox(height: 25.0),
-                // InputBox(
-                //   controller: _courseIdController,
-                //   labelText: 'Course ID',
-                // ),
+                const SizedBox(height: 25.0),
+                Obx(() => DropdownButtonFormField<int>(
+                      value: _selectedCourseId.value,
+                      decoration: InputDecoration(
+                        fillColor: Colors.grey[200],
+                        filled: true,
+                        contentPadding: const EdgeInsets.symmetric(
+                            vertical: 16.0, horizontal: 16.0),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(16.0),
+                          borderSide: BorderSide.none,
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(16.0),
+                          borderSide: BorderSide(
+                            color: Colors.grey[600]!,
+                            width: 1.5,
+                          ),
+                        ),
+                        labelStyle: TextStyle(
+                          color: Colors.grey[600],
+                        ),
+                        floatingLabelStyle: TextStyle(
+                          color: Colors.grey[600],
+                        ),
+                      ),
+                      dropdownColor: Colors.grey[200],
+                      items: courseController.courseList.map((course) {
+                        return DropdownMenuItem<int>(
+                          value: course['id'],
+                          child: Text(course['title']),
+                        );
+                      }).toList(),
+                      onChanged: (int? newValue) {
+                        _selectedCourseId.value = newValue!;
+                      },
+                      validator: (value) {
+                        if (value == null || value == 0) {
+                          return 'Please select a course';
+                        }
+                        return null;
+                      },
+                    )),
                 const SizedBox(height: 25.0),
                 ElevatedButton(
                   onPressed: () => _addUser(context),

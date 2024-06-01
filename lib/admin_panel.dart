@@ -33,9 +33,9 @@ class _AdminState extends State<Admin> {
         actions: [
           IconButton(
               onPressed: () {
-                Navigator.pushNamed(context, '/addMaterial');
+                Navigator.pushNamed(context, '/changePassword');
               },
-              icon: const Icon(Icons.add)),
+              icon: const Icon(Icons.settings)),
         ],
       ),
       body: SingleChildScrollView(
